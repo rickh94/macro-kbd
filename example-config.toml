@@ -1,0 +1,22 @@
+# Device name and path to input events file in /dev/input
+[Numpad1]
+input_path = '/dev/input/event6'
+# DEBUG = true
+
+# Define macros as dictionary of unix key codes. Set debug to true and watch console
+# to get key codes. As KEYCODE = shell command. If a key code is defined as a dictionary
+# of key-value pairs, it will be considered a precursor key. See below
+[Numpad1.macros]
+KEY_KP0 = 'firefox http://duckduckgo.com'
+KEY_KP1 = 'konsole -e htop'
+KEY_KP2 = 'chromium-browser https://gmail.com'
+KEY_KP3 = 'dolphin /home/rick/Nextcloud'
+
+# Macros can be defined with a prefix key.
+[Numpad1.macros.KEY_BACKSPACE]
+# To run 'firefox https://github.com', you would press KEY_BACKSPACE then KEY_KP0.
+KEY_KP0 = 'firefox https://github.com'
+KEY_KP3 = 'firefox https://nextcloud.fmhmail.online:8443'
+
+[Numpad1.macros.KEY_NUMLOCK]
+KEY_KP0 = 'kioclient5 exec /home/rick/.local/share/applications/jetbrains-webstorm.desktop'
