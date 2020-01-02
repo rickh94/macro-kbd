@@ -87,7 +87,6 @@ def handle_event(key, precursor_key: (str, datetime), macros: dict):
             return EventResults.NO_MACRO
         if isinstance(macros.get(key.keycode, None), dict):
             return EventResults.PRECURSOR
-        print(datetime.now() - precursor_key[1])
         if precursor_key and datetime.now() - precursor_key[1] < timedelta(
             milliseconds=1500
         ):
