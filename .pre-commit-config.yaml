@@ -1,0 +1,31 @@
+repos:
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v1.11.0
+    hooks:
+      - id: pyupgrade
+        args: ['--py36-plus']
+  - repo: https://github.com/ambv/black
+    rev: master
+    hooks:
+      - id: black
+        args: ['.']
+        language_version: python3.8
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.4.0
+    hooks:
+#      - id: check-builtin-literals
+#        args: ['--no-allow-dict-kwargs']
+      - id: check-added-large-files
+        args: ['--maxkb=1024']
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: detect-aws-credentials
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+      - id: end-of-file-fixer
+      - id: pretty-format-json
+        args: ['--autofix']
+      - id: trailing-whitespace

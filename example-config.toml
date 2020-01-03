@@ -4,19 +4,35 @@ input_path = '/dev/input/event6'
 # DEBUG = true
 
 # Define macros as dictionary of unix key codes. Set debug to true and watch console
-# to get key codes. As KEYCODE = shell command. If a key code is defined as a dictionary
+# to get key codes. As KEYCODE.shell = shell command or KEYCODE.type = 'something to type linterally'.
+# If a key code is defined with precursor = True, then it will be stored as the precursor key and other
+# keys can be defined below it.
 # of key-value pairs, it will be considered a precursor key. See below
 [Numpad1.macros]
-KEY_KP0 = 'firefox http://duckduckgo.com'
-KEY_KP1 = 'konsole -e htop'
-KEY_KP2 = 'chromium-browser https://gmail.com'
-KEY_KP3 = 'dolphin /home/rick/Nextcloud'
+KEY_KP0.shell = 'firefox http://duckduckgo.com'
+KEY_KP1.shell = 'konsole -e htop'
+KEY_KP2.shell = 'chromium-browser https://gmail.com'
+KEY_KP3.shell = 'dolphin /home/rick/Nextcloud'
+KEY_KP4.type = {text = 'git pull', enter = true}
+KEY_KP5.type = {text = 'cd ~/repositories/'}
+KEY_KP9.shell = 'exit 4'
 
-# Macros can be defined with a prefix key.
+# Macros can be defined with a precursor key.
 [Numpad1.macros.KEY_BACKSPACE]
 # To run 'firefox https://github.com', you would press KEY_BACKSPACE then KEY_KP0.
-KEY_KP0 = 'firefox https://github.com'
-KEY_KP3 = 'firefox https://nextcloud.fmhmail.online:8443'
+precursor = true
+KEY_KP0.shell = 'firefox https://github.com'
+KEY_KP3.shell = 'firefox https://nextcloud.fmhmail.online:8443'
 
 [Numpad1.macros.KEY_NUMLOCK]
-KEY_KP0 = 'kioclient5 exec /home/rick/.local/share/applications/jetbrains-webstorm.desktop'
+precursor = true
+KEY_KP0.shell = 'kioclient5 exec /home/rick/.local/share/applications/jetbrains-webstorm.desktop'
+
+[ExtraKeyboard]
+input_path = '/dev/input/event17'
+DEBUG = true
+
+
+[ExtraKeyboard.macros]
+KEY_G.shell = 'firefox https://gmail.com'
+KEY_U.type = 'macro from second keyboard in other thread'

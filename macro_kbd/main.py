@@ -8,6 +8,7 @@ from typing import Union, List
 import click
 import toml
 from evdev import InputDevice, categorize, ecodes
+import pyautogui
 
 DEFAULT_CONFIG_PATH = Path("~").expanduser() / ".config" / "macro-kbd" / "config.toml"
 
@@ -37,23 +38,40 @@ class InputWithMacros:
     def reload_macros(self):
         config = toml.load(self.config_path)
         next_config = config.get(self.name)
-        if next_config["macros"] != self.macros:
-            self.macros = next_config["macros"]
+        if (next_macros := next_config.get("macros", {})) != self.macros:
+            self.macros = next_macros
+
+
+def non_blocking_alert(*args, **kwargs):
+    thread_alert = threading.Thread(target=pyautogui.alert, args=args, kwargs=kwargs)
+    thread_alert.start()
 
 
 def get_devices(config_path: Path):
     config = toml.load(config_path)
     devices: List[InputWithMacros] = []
     for name, data in config.items():
-        devices.append(
-            InputWithMacros(
-                data["input_path"],
-                data["macros"],
-                name,
-                config_path,
-                data.get("DEBUG", False),
+        if "input_path" not in data:
+            non_blocking_alert(
+                f"Device {name} does not have an input path", title="Keyboard Macros."
             )
-        )
+            continue
+        try:
+            devices.append(
+                InputWithMacros(
+                    data["input_path"],
+                    data.get("macros", {}),
+                    name,
+                    config_path,
+                    data.get("DEBUG", False),
+                )
+            )
+        except FileNotFoundError:
+            non_blocking_alert(
+                f"Device {name} could not be found at {data['input_path']}. Other"
+                f" devices will not be affected.",
+                title="Keyboard Macros",
+            )
     return devices
 
 
@@ -75,9 +93,11 @@ def create_loop(input_device: InputWithMacros, macros_reload_seconds: int = 300)
                 precursor_key = None
             elif result == EventResults.PRECURSOR:
                 precursor_key = (key.keycode, datetime.now())
-            elif result == EventResults.NO_MACRO:
+            elif result == EventResults.NO_MACRO and not input_device.debug:
+                non_blocking_alert("No Macro for that Key.", title="Keyboard Macros")
                 print("no macro for that key")
             elif result == EventResults.FAILED:
+                non_blocking_alert("Macro failed.", title="Keyboard Macros")
                 print("macro failed")
 
 
@@ -85,7 +105,7 @@ def handle_event(key, precursor_key: (str, datetime), macros: dict):
     if key.keystate == key.key_down:
         if key.keycode not in macros:
             return EventResults.NO_MACRO
-        if isinstance(macros.get(key.keycode, None), dict):
+        if macros[key.keycode].get("precursor", False):
             return EventResults.PRECURSOR
         if precursor_key and datetime.now() - precursor_key[1] < timedelta(
             milliseconds=1500
@@ -99,9 +119,18 @@ def execute_macro(macros: dict, key_code: str):
     if not macro:
         return EventResults.NO_MACRO
     try:
-        result = subprocess.Popen(macro.split(" "))
-        if result.returncode and result.returncode != 0:
-            return EventResults.COMPLETE
+        if command := macro.get("shell", None):
+            result = subprocess.Popen(command.split(" "))
+            if result.returncode and result.returncode != 0:
+                return EventResults.COMPLETE
+        elif keys := macro.get("type"):
+            pyautogui.typewrite(keys['text'])
+            if keys.get('enter', False):
+                pyautogui.press("enter")
+        elif keys := macro.get("press"):
+            pyautogui.press(keys)
+        else:
+            return EventResults.NO_MACRO
     except Exception as err:
         print(err)
         return EventResults.FAILED
